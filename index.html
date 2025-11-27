@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multi Time Difference (Mobile Friendly)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- SheetJS สำหรับสร้างไฟล์ Excel .xlsx -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #020617;
+      color: #e5e7eb;
+      padding: 16px;
+    }
+    .app {
+      width: 100%;
+      max-width: 1100px;
+    }
+    .card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 20px 18px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+      border: 1px solid #1f2937;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg,#38bdf8,#a855f7);
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+    .hint {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    th, td {
+      padding: 6px 6px;
+      border-bottom: 1px solid #111827;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      color: #9ca3af;
+      font-weight: 500;
+      background: #020617;
+    }
+    td:nth-child(1),
+    th:nth-child(1) {
+      width: 28px;
+      text-align: center;
+    }
+    td:nth-child(2),
+    th:nth-child(2),
+    td:nth-child(4),
+    th:nth-child(4) {
+      width: 120px;
+    }
+    td:nth-child(3),
+    th:nth-child(3),
+    td:nth-child(5),
+    th:nth-child(5) {
+      width: 170px;
+    }
+    td:nth-child(6),
+    th:nth-child(6) {
+      width: 200px;
+    }
+    td:nth-child(7),
+    th:nth-child(7) {
+      width: 150px;
+      text-align: right;
+    }
+    td:nth-child(8),
+    th:nth-child(8) {
+      width: 80px;
+      text-align: center;
+    }
+
+    input, select {
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+      outline: none;
+      font-size: 0.8rem;
+      transition: border 0.15s, box-shadow 0.15s;
+    }
+    input:focus, select:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.35);
+    }
+    input[type="date"] {
+      width: 100%;
+      padding: 6px 8px;
+    }
+
+    .time-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .time-group input[type="number"] {
+      width: 3.3rem;
+      padding: 6px 6px;
+      text-align: center;
+    }
+    .time-group select {
+      padding: 6px 6px;
+    }
+    .time-group .colon {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      padding: 0 2px;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+      white-space: nowrap;
+    }
+    button.primary {
+      background: linear-gradient(135deg,#38bdf8,#a855f7);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(59,130,246,0.4);
+    }
+    button.secondary {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #374151;
+    }
+    button.danger {
+      background: #7f1d1d;
+      color: #fecaca;
+      border: 1px solid #b91c1c;
+    }
+    button.small {
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      box-shadow: none;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.55);
+    }
+    button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+    .error {
+      color: #fca5a5;
+      font-size: 0.8rem;
+      margin-top: 4px;
+    }
+    .duration-text {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .total-row {
+      margin-top: 8px;
+      font-size: 0. Nine;
+      font-size: 0.9rem;
+    }
+    .small-note {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 780px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        border-bottom: 1px solid #111827;
+        padding: 6px 0;
+      }
+      td {
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 4px 0;
+      }
+      td::before {
+        content: attr(data-label);
+        font-weight: 500;
+        color: #9ca3af;
+        margin-right: 8px;
+        flex: 0 0 100px;
+        text-align: left;
+      }
+      td:nth-child(1)::before {
+        content: "#";
+        flex: 0 0 24px;
+      }
+      td:nth-child(8)::before {
+        content: "ลบ";
+        flex: 0 0 40px;
+      }
+      .time-group {
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <h1>
+        <span class="dot"></span>
+        Multi Time Difference (Mobile)
+      </h1>
+      <div class="subtitle">
+        1 แถว = 1 การคำนวณ ใช้ <b>วันที่ + เวลา (ชั่วโมง/นาที/AM–PM)</b> คิดผลต่างตามจริง  
+        ถ้า To ก่อน From ผลลัพธ์จะเป็นค่าติดลบ (เช่น <code>-2 ชม. 30 นาที</code>)
+      </div>
+
+      <div class="hint">
+        เวลาแยกเป็น: <b>ชั่วโมง</b> (1–12), <b>นาที</b> (0–59), และเลือก <b>AM / PM</b>  
+        แถวใหม่ default = 12:00 PM ทั้ง From และ To, วันที่เป็นวันนี้
+      </div>
+
+      <div class="btn-row">
+        <button class="secondary" id="addRowBtn">➕ เพิ่มบรรทัด</button>
+        <button class="primary" id="calcAllBtn">🧮 คำนวณทั้งหมด</button>
+        <button class="secondary" id="exportBtn">📤 Export Excel (.xlsx)</button>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>From Date</th>
+              <th>From Time</th>
+              <th>To Date</th>
+              <th>To Time</th>
+              <th>หมายเหตุ</th>
+              <th>ส่วนต่าง</th>
+              <th>ลบ</th>
+            </tr>
+          </thead>
+          <tbody id="rowsBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div id="error" class="error" style="display:none;"></div>
+
+      <div class="total-row" id="totalRow">
+        รวมทั้งหมด: 0 ชั่วโมง 0 นาที (0 นาที)
+      </div>
+      <div class="small-note">
+        * แถวที่ข้อมูลเวลาไม่ครบหรือรูปแบบผิด จะไม่ถูกนำไปรวมผลรวมและไม่ถูก Export  
+        * ไฟล์เป็น .xlsx เปิดใน Excel ได้ตรง ๆ
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function todayString() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function parseTimeParts(hourStr, minuteStr, ampmStr) {
+      if (!hourStr || !minuteStr || !ampmStr) return null;
+
+      const h = parseInt(hourStr, 10);
+      const m = parseInt(minuteStr, 10);
+      const ampm = ampmStr.toUpperCase();
+
+      if (Number.isNaN(h) || Number.isNaN(m)) return null;
+      if (h < 1 || h > 12) return null;
+      if (m < 0 || m > 59) return null;
+      if (ampm !== "AM" && ampm !== "PM") return null;
+
+      let hour24 = h;
+      if (ampm === "AM") {
+        if (hour24 === 12) hour24 = 0;        // 12AM -> 00
+      } else {
+        if (hour24 !== 12) hour24 += 12;      // PM ยกเว้น 12PM
+      }
+
+      return { hour: hour24, minute: m };
+    }
+
+    function buildDateTime(dateStr, hourStr, minuteStr, ampmStr) {
+      const t = parseTimeParts(hourStr, minuteStr, ampmStr);
+      if (!t) return null;
+
+      let y, m, d;
+      if (dateStr) {
+        const parts = dateStr.split("-");
+        if (parts.length !== 3) return null;
+        y = parseInt(parts[0], 10);
+        m = parseInt(parts[1], 10) - 1;
+        d = parseInt(parts[2], 10);
+      } else {
+        const now = new Date();
+        y = now.getFullYear();
+        m = now.getMonth();
+        d = now.getDate();
+      }
+      if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return null;
+
+      return new Date(y, m, d, t.hour, t.minute, 0, 0);
+    }
+
+    // คำนวณตามวันและเวลาจริง ๆ ไม่บังคับให้ To > From
+    function calcDiff(dateFromStr, fH, fM, fA, dateToStr, tH, tM, tA) {
+      const fromDt = buildDateTime(dateFromStr, fH, fM, fA);
+      const toDt = buildDateTime(dateToStr || dateFromStr, tH, tM, tA);
+
+      if (!fromDt || !toDt) {
+        return { error: "วันที่หรือเวลาไม่ถูกต้อง", totalMinutes: null };
+      }
+
+      const diffMs = toDt - fromDt;
+      const totalMinutes = Math.round(diffMs / 60000); // อาจเป็นลบได้
+      return { totalMinutes, error: null };
+    }
+
+    function formatDuration(totalMinutes) {
+      const sign = totalMinutes < 0 ? "-" : "";
+      const absMin = Math.abs(totalMinutes);
+      const h = Math.floor(absMin / 60);
+      const m = absMin % 60;
+      return `${sign}${h} ชม. ${m} นาที`;
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("error");
+      if (!msg) {
+        el.style.display = "none";
+        el.textContent = "";
+        return;
+      }
+      el.textContent = msg;
+      el.style.display = "block";
+    }
+
+    function renumberRows() {
+      const rows = document.querySelectorAll("#rowsBody tr");
+      rows.forEach((row, idx) => {
+        const cell = row.querySelector("td.idx");
+        if (cell) cell.textContent = idx + 1;
+      });
+    }
+
+    function addRow(defaults = {}) {
+      const tbody = document.getElementById("rowsBody");
+      const tr = document.createElement("tr");
+
+      const today = todayString();
+      const defDateFrom = defaults.dateFrom || today;
+      const defDateTo = defaults.dateTo || today;
+
+      const defFromHour = defaults.fromHour || "12";
+      const defFromMinute = defaults.fromMinute || "0";
+      const defFromAmpm = defaults.fromAmPm || "PM";
+
+      const defToHour = defaults.toHour || "12";
+      const defToMinute = defaults.toMinute || "0";
+      const defToAmpm = defaults.toAmPm || "PM";
+
+      const defRemark = defaults.remark || "";
+
+      tr.innerHTML = `
+        <td class="idx" data-label="#">-</td>
+        <td data-label="From Date">
+          <input type="date" class="date-from" value="${defDateFrom}">
+        </td>
+        <td data-label="From Time">
+          <div class="time-group">
+            <input type="number" class="time-from-hour" min="1" max="12" value="${defFromHour}" />
+            <span class="colon">:</span>
+            <input type="number" class="time-from-minute" min="0" max="59" value="${defFromMinute}" />
+            <select class="time-from-ampm">
+              <option value="AM" ${defFromAmpm === "AM" ? "selected" : ""}>AM</option>
+              <option value="PM" ${defFromAmpm === "PM" ? "selected" : ""}>PM</option>
+            </select>
+          </div>
+        </td>
+        <td data-label="To Date">
+          <input type="date" class="date-to" value="${defDateTo}">
+        </td>
+        <td data-label="To Time">
+          <div class="time-group">
+            <input type="number" class="time-to-hour" min="1" max="12" value="${defToHour}" />
+            <span class="colon">:</span>
+            <input type="number" class="time-to-minute" min="0" max="59" value="${defToMinute}" />
+            <select class="time-to-ampm">
+              <option value="AM" ${defToAmpm === "AM" ? "selected" : ""}>AM</option>
+              <option value="PM" ${defToAmpm === "PM" ? "selected" : ""}>PM</option>
+            </select>
+          </div>
+        </td>
+        <td data-label="หมายเหตุ">
+          <input type="text" class="remark" value="${defRemark}" placeholder="เช่น งาน A, ประชุมลูกค้า">
+        </td>
+        <td data-label="ส่วนต่าง">
+          <span class="duration-text">-</span>
+        </td>
+        <td data-label="ลบ">
+          <button type="button" class="danger small delete-btn">ลบ</button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+      renumberRows();
+    }
+
+    function calculateAll() {
+      const rows = document.querySelectorAll("#rowsBody tr");
+      let grandTotal = 0;
+      let anyValid = false;
+      showError("");
+
+      rows.forEach(row => {
+        const dateFrom = row.querySelector(".date-from").value;
+        const dateTo = row.querySelector(".date-to").value;
+
+        const fH = row.querySelector(".time-from-hour").value;
+        const fM = row.querySelector(".time-from-minute").value;
+        const fA = row.querySelector(".time-from-ampm").value;
+
+        const tH = row.querySelector(".time-to-hour").value;
+        const tM = row.querySelector(".time-to-minute").value;
+        const tA = row.querySelector(".time-to-ampm").value;
+
+        const durationEl = row.querySelector(".duration-text");
+
+        // ถ้า row ว่างมาก ๆ → ข้าม
+        if (!fH && !fM && !tH && !tM && !dateFrom && !dateTo) {
+          durationEl.textContent = "-";
+          return;
+        }
+
+        if (!fH || !fM || !fA || !tH || !tM || !tA) {
+          durationEl.textContent = "กรอกเวลาไม่ครบ";
+          return;
+        }
+
+        const res = calcDiff(dateFrom, fH, fM, fA, dateTo, tH, tM, tA);
+
+        if (res.error || res.totalMinutes === null) {
+          durationEl.textContent = "รูปแบบผิด";
+          return;
+        }
+
+        anyValid = true;
+        grandTotal += res.totalMinutes;
+        durationEl.textContent = formatDuration(res.totalMinutes);
+      });
+
+      const totalRow = document.getElementById("totalRow");
+      if (!anyValid) {
+        totalRow.textContent = "รวมทั้งหมด: 0 ชั่วโมง 0 นาที (0 นาที)";
+        return;
+      }
+      totalRow.textContent =
+        `รวมทั้งหมด: ${formatDuration(grandTotal)} (${grandTotal} นาที)`;
+    }
+
+    function toDisplayTime(hourStr, minuteStr, ampmStr) {
+      const h = parseInt(hourStr || "0", 10) || 0;
+      const m = parseInt(minuteStr || "0", 10) || 0;
+      const h12 = Math.min(Math.max(h, 1), 12);
+      const mm = String(Math.min(Math.max(m, 0), 59)).padStart(2, "0");
+      const a = (ampmStr || "AM").toUpperCase() === "PM" ? "PM" : "AM";
+      return `${h12}:${mm}${a}`;
+    }
+
+    function exportExcel() {
+      // คำนวณก่อน export
+      calculateAll();
+
+      const rows = document.querySelectorAll("#rowsBody tr");
+      const exportData = [];
+
+      rows.forEach((row, idx) => {
+        const dateFrom = row.querySelector(".date-from").value;
+        const dateTo = row.querySelector(".date-to").value;
+
+        const fH = row.querySelector(".time-from-hour").value;
+        const fM = row.querySelector(".time-from-minute").value;
+        const fA = row.querySelector(".time-from-ampm").value;
+
+        const tH = row.querySelector(".time-to-hour").value;
+        const tM = row.querySelector(".time-to-minute").value;
+        const tA = row.querySelector(".time-to-ampm").value;
+
+        const remark = row.querySelector(".remark").value.trim();
+
+        if (!fH || !fM || !fA || !tH || !tM || !tA) return;
+
+        const res = calcDiff(dateFrom, fH, fM, fA, dateTo, tH, tM, tA);
+        if (res.error || res.totalMinutes === null) return;
+
+        const durationText = formatDuration(res.totalMinutes);
+        const fromTimeDisplay = toDisplayTime(fH, fM, fA);
+        const toTimeDisplay = toDisplayTime(tH, tM, tA);
+
+        exportData.push({
+          Index: idx + 1,
+          FromDate: dateFrom || "",
+          FromTime: fromTimeDisplay,
+          ToDate: dateTo || "",
+          ToTime: toTimeDisplay,
+          Remark: remark,
+          TotalMinutes: res.totalMinutes,
+          DurationText: durationText
+        });
+      });
+
+      if (!exportData.length) {
+        alert("ยังไม่มีข้อมูลถูกต้องสำหรับ Export");
+        return;
+      }
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "TimeSheet");
+
+      XLSX.writeFile(wb, "time-diff-export.xlsx");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // เริ่มด้วย 1 row
+      addRow();
+
+      document.getElementById("addRowBtn").addEventListener("click", () => {
+        addRow();
+      });
+
+      document.getElementById("calcAllBtn").addEventListener("click", () => {
+        calculateAll();
+      });
+
+      document.getElementById("exportBtn").addEventListener("click", () => {
+        exportExcel();
+      });
+
+      // ลบทีละแถว
+      document.getElementById("rowsBody").addEventListener("click", (e) => {
+        const btn = e.target.closest(".delete-btn");
+        if (!btn) return;
+        const row = btn.closest("tr");
+        if (row) {
+          row.remove();
+          renumberRows();
+          calculateAll();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
