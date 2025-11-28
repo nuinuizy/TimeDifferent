@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <title>Multi Time Difference (Mobile Friendly)</title>
+  <title>Multi Time Difference (Mobile)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- SheetJS สำหรับสร้างไฟล์ Excel .xlsx -->
@@ -132,6 +132,12 @@
       width: 3.3rem;
       padding: 6px 6px;
       text-align: center;
+      -moz-appearance: textfield;
+    }
+    .time-group input[type="number"]::-webkit-outer-spin-button,
+    .time-group input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
     .time-group select {
       padding: 6px 6px;
@@ -199,7 +205,6 @@
     }
     .total-row {
       margin-top: 8px;
-      font-size: 0. Nine;
       font-size: 0.9rem;
     }
     .small-note {
@@ -256,13 +261,13 @@
         Multi Time Difference (Mobile)
       </h1>
       <div class="subtitle">
-        1 แถว = 1 การคำนวณ ใช้ <b>วันที่ + เวลา (ชั่วโมง/นาที/AM–PM)</b> คิดผลต่างตามจริง  
+        1 แถว = 1 การคำนวณ ใช้ <b>วันที่ + เวลา (ชั่วโมง / นาที / AM–PM)</b> คิดผลต่างตามจริง  
         ถ้า To ก่อน From ผลลัพธ์จะเป็นค่าติดลบ (เช่น <code>-2 ชม. 30 นาที</code>)
       </div>
 
       <div class="hint">
-        เวลาแยกเป็น: <b>ชั่วโมง</b> (1–12), <b>นาที</b> (0–59), และเลือก <b>AM / PM</b>  
-        แถวใหม่ default = 12:00 PM ทั้ง From และ To, วันที่เป็นวันนี้
+        เวลาแยกเป็น: <b>ชั่วโมง</b> (1–12, ปล่อยว่างได้ถ้ายังไม่กรอก), <b>นาที</b> (0–59, default = 0), และเลือก <b>AM / PM</b>  
+        แถวใหม่ default = ชั่วโมงว่าง, นาที = 0, AM/PM = PM, วันที่เป็นวันนี้
       </div>
 
       <div class="btn-row">
@@ -404,12 +409,12 @@
       const defDateFrom = defaults.dateFrom || today;
       const defDateTo = defaults.dateTo || today;
 
-      const defFromHour = defaults.fromHour || "12";
-      const defFromMinute = defaults.fromMinute || "0";
+      const defFromHour = defaults.fromHour ?? "";      // 🆕 default ว่าง
+      const defFromMinute = defaults.fromMinute ?? "0"; // 🆕 default 0
       const defFromAmpm = defaults.fromAmPm || "PM";
 
-      const defToHour = defaults.toHour || "12";
-      const defToMinute = defaults.toMinute || "0";
+      const defToHour = defaults.toHour ?? "";          // 🆕 default ว่าง
+      const defToMinute = defaults.toMinute ?? "0";     // 🆕 default 0
       const defToAmpm = defaults.toAmPm || "PM";
 
       const defRemark = defaults.remark || "";
@@ -421,7 +426,7 @@
         </td>
         <td data-label="From Time">
           <div class="time-group">
-            <input type="number" class="time-from-hour" min="1" max="12" value="${defFromHour}" />
+            <input type="number" class="time-from-hour" min="1" max="12" value="${defFromHour}" placeholder="ชั่วโมง" />
             <span class="colon">:</span>
             <input type="number" class="time-from-minute" min="0" max="59" value="${defFromMinute}" />
             <select class="time-from-ampm">
@@ -435,7 +440,7 @@
         </td>
         <td data-label="To Time">
           <div class="time-group">
-            <input type="number" class="time-to-hour" min="1" max="12" value="${defToHour}" />
+            <input type="number" class="time-to-hour" min="1" max="12" value="${defToHour}" placeholder="ชั่วโมง" />
             <span class="colon">:</span>
             <input type="number" class="time-to-minute" min="0" max="59" value="${defToMinute}" />
             <select class="time-to-ampm">
@@ -575,8 +580,10 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      // เริ่มด้วย 1 row
-      addRow();
+      // 🆕 เริ่มด้วย 4 แถว
+      for (let i = 0; i < 4; i++) {
+        addRow();
+      }
 
       document.getElementById("addRowBtn").addEventListener("click", () => {
         addRow();
